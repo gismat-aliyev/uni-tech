@@ -23,6 +23,6 @@ public class AccountEntity {
     private String taxId;
     private String bankAddress;
     private BigDecimal balance;
-    private final String status = "OPEN";
+    private String status = "OPEN";
     private final LocalDateTime accountCreateDate = LocalDateTime.now();
 }

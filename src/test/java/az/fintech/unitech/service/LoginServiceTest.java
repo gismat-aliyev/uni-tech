@@ -1,31 +1,30 @@
-package az.fintech.unitech;
+package az.fintech.unitech.service;
 
 import az.fintech.unitech.dto.request.LoginRequest;
 import az.fintech.unitech.dto.response.LoginResponse;
 import az.fintech.unitech.entity.CustomerEntity;
+import az.fintech.unitech.exception.LoginException;
 import az.fintech.unitech.repository.CustomerRepository;
-import az.fintech.unitech.service.LoginService;
 import az.fintech.unitech.service.impl.LoginServiceImpl;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 
-import static az.fintech.unitech.util.StringUtils.beautify;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(SpringExtension.class)
+@SpringBootTest
 class LoginServiceTest {
-
-    @Mock
-    private CustomerRepository customerRepository;
+    private CustomerRepository customerRepository = Mockito.mock(CustomerRepository.class);
 
     @Spy
     @InjectMocks
@@ -33,13 +32,23 @@ class LoginServiceTest {
 
     @Test
     public void loginSuccessCase() {
-        given(customerRepository.findByPinAndPassword("PIN", "PASSWORD"))
-                .willReturn(Optional.of(fakeCustomerEntity()));
+        when(customerRepository.findByPinAndPassword(anyString(), anyString()))
+                .thenReturn(Optional.of(fakeCustomerEntity()));
         LoginResponse loginResponse = loginService.login(fakeLoginRequest());
-        Assert.assertEquals(beautify(fakeResponse()), beautify(loginResponse));
+        assertEquals(fakeSuccessResponse().getResult(), loginResponse.getResult());
     }
 
-    private LoginResponse fakeResponse() {
+    @Test
+    public void failedCase() {
+        when(customerRepository.findByPinAndPassword(anyString(), anyString()))
+                .thenReturn(Optional.empty());
+        LoginException loginException = assertThrows(LoginException.class,
+                () -> loginService.login(fakeLoginRequest()));
+
+        assertEquals("PIN_OR_PASSWORD_WRONG_PLEASE_CHECK_AND_RETRY", loginException.getMessage());
+    }
+
+    private LoginResponse fakeSuccessResponse() {
         return LoginResponse.builder()
                 .customerId(1L)
                 .result("LOGIN_IS_SUCCESS")
