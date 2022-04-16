@@ -1,0 +1,4 @@
+currency:
+  url:
+   exchange: 'https://v6.exchangerate-api.com/v6/a73e44e39c51bf280b70e84d/latest/'
+   list: 'https://openexchangerates.org/api/currencies.json'
